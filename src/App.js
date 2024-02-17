@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import './App.css';
 import Draft from './Component/Draft';
 
 function App() {
@@ -21,11 +20,9 @@ function App() {
     <div className='w-screen bg-gray-200 '>
       <div className='relative w-full min-h-screen mb-5vh p-10 flex flex-col text-black pt-[32px]'>
         <div className='mx-auto h-[10%] flex pt-[10px] justify-around'>
-          <p className='w-full pb-8 items-center '>
+          <p className='w-full pb-8 font-semibold items-center '>
             Demo editor by Anand Raj
           </p>
-
-          
 
           {/* button */}
           <button onClick={saveHandler} className={`absolute border-4 left-[90%] -translate-y-[25%] border-black rounded-md px-3 py-2 bg-gray-200 hover:scale-95 transition-all duration-200 shadow-[5px_5px_0px_0px_rgba(1,1,122)] ${customClass}`}>Save</button>

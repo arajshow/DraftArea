@@ -3,21 +3,18 @@ import {
   Editor,
   EditorState,
   RichUtils,
-  ContentBlock,
   convertToRaw,
   convertFromRaw,
   Modifier,
-  genKey,
 } from "draft-js";
 import { style } from "../utils/style";
-import draftToHtml from "draftjs-to-html";
 import "draft-js/dist/Draft.css";
 
 const Draft = ({ setDraftArea }) => {
   // to handle initial state of Editor
   const handleState = () => {
     const savedState = localStorage.getItem("draft");
-    if (savedState) {
+    if (savedState != null && savedState != undefined) {
       return EditorState.createWithContent(
         convertFromRaw(JSON.parse(savedState))
       );
@@ -27,12 +24,23 @@ const Draft = ({ setDraftArea }) => {
   };
 
   const ref = useRef(null);
-  const [editorState, setEditorState] = useState(handleState());
+  const [editorState, setEditorState] = useState(() =>
+    EditorState.createEmpty()
+  );
 
   // for focus
   useEffect(() => {
     if (ref.current) {
       ref.current.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedContent = localStorage.getItem("draft");
+    if (savedContent) {
+      const contentRaw = JSON.parse(savedContent);
+      const contentState = convertFromRaw(contentRaw);
+      setEditorState(EditorState.createWithContent(contentState));
     }
   }, []);
 
@@ -178,9 +186,10 @@ const Draft = ({ setDraftArea }) => {
 
   // onChangeHandler
   const handleChange = (newEditorState) => {
-    const contentState = newEditorState.getCurrentContent();
     setEditorState(newEditorState);
-    setDraftArea(convertToRaw(contentState));
+    const contentState = editorState.getCurrentContent();
+    const contentRaw = convertToRaw(contentState);
+    setDraftArea(contentRaw);
     // console.log(
     //   "data2",
     //   htmlData,
