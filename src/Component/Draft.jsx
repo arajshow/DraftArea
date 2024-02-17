@@ -3,9 +3,11 @@ import {
   Editor,
   EditorState,
   RichUtils,
+  Modifier,
+  ContentBlock,
   convertToRaw,
   convertFromRaw,
-  Modifier,
+  genKey,
 } from "draft-js";
 import { style } from "../utils/style";
 import "draft-js/dist/Draft.css";
@@ -37,16 +39,25 @@ const Draft = ({ setDraftArea }) => {
 
   useEffect(() => {
     const savedContent = localStorage.getItem("draft");
-    if (savedContent) {
-      const contentRaw = JSON.parse(savedContent);
-      const contentState = convertFromRaw(contentRaw);
-      setEditorState(EditorState.createWithContent(contentState));
+    if (savedContent !== null && savedContent !== undefined) {
+      try {
+        const contentRaw = JSON.parse(savedContent);
+        const contentState = convertFromRaw(contentRaw);
+        setEditorState(EditorState.createWithContent(contentState));
+      } catch (error) {
+        console.error("Error parsing saved content:", error);
+        // Handle the error appropriately, e.g., clear localStorage or show a message to the user.
+      }
     }
   }, []);
 
   const handleBeforeInput = function (input) {
+    if (!editorState) {
+      return; // Exit early if editorState is not defined
+    }
+
     if (input === " ") {
-      console.log("inside");
+      // console.log("inside");
       const selectionState = editorState.getSelection();
       const contentState = editorState.getCurrentContent();
       const currentBlock = contentState.getBlockForKey(
@@ -65,7 +76,7 @@ const Draft = ({ setDraftArea }) => {
       const end = selectionState.getEndOffset();
 
       if (currentBlockText.charAt(start) === "#" && start === 0) {
-        console.log("got #");
+        // console.log("got #");
         const newContentState = Modifier.replaceText(
           contentState,
           selectionState.merge({
@@ -184,6 +195,50 @@ const Draft = ({ setDraftArea }) => {
     }
   };
 
+  const handleKeyCommand = (command, editorState) => {
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      setEditorState(newState);
+      return "handled";
+    }
+    if (command === "split-block") {
+      const currentContent = editorState.getCurrentContent();
+      const currentSelection = editorState.getSelection();
+
+      // Create a new empty block with the same text as the current selection
+      const newBlock = new ContentBlock({
+        key: genKey(),
+        type: "unstyled",
+        text: "\n",
+        characterList: "",
+      });
+
+      // Add the new block after the current selection
+      const blockMap = currentContent
+        .getBlockMap()
+        .set(newBlock.getKey(), newBlock);
+      const newContentState = currentContent.merge({
+        blockMap,
+        selectionAfter: currentSelection.merge({
+          anchorKey: newBlock.getKey(),
+          focusKey: newBlock.getKey(),
+          anchorOffset: 0,
+          focusOffset: 0,
+        }),
+      });
+
+      // Update the editorState with the new content and selection
+      const newEditorState = EditorState.push(
+        editorState,
+        newContentState,
+        "split-block"
+      );
+      setEditorState(newEditorState);
+      return "handled";
+    }
+    return "not-handled";
+  };
+
   // onChangeHandler
   const handleChange = (newEditorState) => {
     setEditorState(newEditorState);
@@ -204,6 +259,7 @@ const Draft = ({ setDraftArea }) => {
         editorState={editorState}
         onChange={handleChange}
         handleBeforeInput={handleBeforeInput}
+        handleKeyCommand={handleKeyCommand}
         customStyleMap={style}
       />
     </div>
