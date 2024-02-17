@@ -25,8 +25,10 @@ function App() {
             Demo editor by Anand Raj
           </p>
 
+          
+
           {/* button */}
-          <button onClick={saveHandler} className={`absolute border-4 left-[90%] -translate-y-[25%] border-black rounded-md px-3 py-2 bg-gray-200 hover:scale-95 transition-all duration-200 ${customClass}`}>Save</button>
+          <button onClick={saveHandler} className={`absolute border-4 left-[90%] -translate-y-[25%] border-black rounded-md px-3 py-2 bg-gray-200 hover:scale-95 transition-all duration-200 shadow-[5px_5px_0px_0px_rgba(1,1,122)] ${customClass}`}>Save</button>
 
         </div>
 
