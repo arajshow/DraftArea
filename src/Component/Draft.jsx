@@ -13,18 +13,6 @@ import { style } from "../utils/style";
 import "draft-js/dist/Draft.css";
 
 const Draft = ({ setDraftArea }) => {
-  // to handle initial state of Editor
-  const handleState = () => {
-    const savedState = localStorage.getItem("draft");
-    if (savedState != null && savedState != undefined) {
-      return EditorState.createWithContent(
-        convertFromRaw(JSON.parse(savedState))
-      );
-    } else {
-      return EditorState.createEmpty();
-    }
-  };
-
   const ref = useRef(null);
   const [editorState, setEditorState] = useState(() =>
     EditorState.createEmpty()
